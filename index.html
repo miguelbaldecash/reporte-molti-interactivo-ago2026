@@ -563,15 +563,22 @@ function renderSummary() {
       });
     }
   });
-  var attachRate = formStarts > 0 ? (withOrgAcc / formStarts * 100) : 0;
+  // Compute backend totals for summary
+  var beAccOrgTotal = 0;
+  (DATA.backendAccOrg || []).forEach(function(b) { beAccOrgTotal += b.v; });
+  var beSolTotal = 0;
+  (DATA.backendSemanal || []).forEach(function(b) { beSolTotal += b.sol_total; });
+  var summaryAccOrg = beAccOrgTotal > 0 ? beAccOrgTotal : withOrgAcc;
+  var summaryBase = beSolTotal > 0 ? beSolTotal : formStarts;
+  var attachRate = summaryBase > 0 ? (summaryAccOrg / summaryBase * 100) : 0;
   var avgItems = withOrgAcc > 0 ? (orgAccCount / withOrgAcc) : 0;
   var avgCuota = orgAccCuotaN > 0 ? (orgAccCuotaSum / orgAccCuotaN) : 0;
   var firmados = sessions.filter(function(s) { return s.firmado; }).length;
 
   var html = '';
   html += '<div class="summary-box"><div class="summary-val">' + total.toLocaleString() + '</div><div class="summary-label">Sesiones</div></div>';
-  html += '<div class="summary-box"><div class="summary-val">' + formStarts.toLocaleString() + '</div><div class="summary-label">Con solicitud</div></div>';
-  html += '<div class="summary-box"><div class="summary-val">' + withOrgAcc.toLocaleString() + '</div><div class="summary-label">Con acc organico</div></div>';
+  html += '<div class="summary-box"><div class="summary-val">' + summaryBase.toLocaleString() + '</div><div class="summary-label">Solicitudes</div></div>';
+  html += '<div class="summary-box"><div class="summary-val">' + summaryAccOrg.toLocaleString() + '</div><div class="summary-label">Con acc organico</div></div>';
   html += '<div class="summary-box"><div class="summary-val" style="color:' + (attachRate > 12 ? '#00e676' : attachRate < 8 ? '#e53e3e' : '#ffdf60') + '">' + attachRate.toFixed(1) + '%</div><div class="summary-label">Attach rate</div></div>';
   html += '<div class="summary-box"><div class="summary-val">' + avgItems.toFixed(1) + '</div><div class="summary-label">Items / form</div></div>';
   html += '<div class="summary-box"><div class="summary-val">S/' + avgCuota.toFixed(0) + '</div><div class="summary-label">Cuota prom adic</div></div>';
@@ -695,7 +702,8 @@ function renderTable1() {
 
   // Compute derived metrics
   data.forEach(function(g) {
-    g.attach = g.conApp > 0 ? Math.round(g.conAccOrg / g.conApp * 1000) / 10 : 0;
+    var attachBase = g.solBackend > 0 ? g.solBackend : g.conApp;
+    g.attach = attachBase > 0 ? Math.round(g.conAccOrg / attachBase * 1000) / 10 : 0;
     g.itemsProm = g.conAccOrg > 0 ? Math.round(g.orgAccCount / g.conAccOrg * 10) / 10 : 0;
     g.cuotaProm = g.orgCuotaN > 0 ? Math.round(g.orgCuotaSum / g.orgCuotaN) : 0;
   });
@@ -734,7 +742,8 @@ function renderTable1() {
     totals.webAntigua += d.webAntigua || 0;
     totals.nuevaWeb += d.nuevaWeb || 0;
   });
-  totals.attach = totals.conApp > 0 ? Math.round(totals.conAccOrg / totals.conApp * 1000) / 10 : 0;
+  var totalsAttachBase = totals.solBackend > 0 ? totals.solBackend : totals.conApp;
+  totals.attach = totalsAttachBase > 0 ? Math.round(totals.conAccOrg / totalsAttachBase * 1000) / 10 : 0;
   totals.itemsProm = totals.conAccOrg > 0 ? Math.round(totals.orgAccCount / totals.conAccOrg * 10) / 10 : 0;
   totals.cuotaProm = totals.orgCuotaN > 0 ? Math.round(totals.orgCuotaSum / totals.orgCuotaN) : 0;
   h += '<th style="color:#ffdf60">Total</th>';
