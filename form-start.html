@@ -203,7 +203,6 @@ function renderTable2() {
   var metrics = [
     {key:'fase', label:'Fase', fmt:function(v,r){return '<span class="'+faseClass(r.fase)+'">'+r.fase+'</span>';}},
     {key:'form_starts', label:'Form starts', fmt:function(v){return v.toLocaleString();}},
-    {key:'con_acc_impression', label:'Vieron accesorios', fmt:function(v){return v.toLocaleString();}},
     {key:'con_acc_add', label:'Agregaron accesorio', fmt:function(v){return '<strong>'+v.toLocaleString()+'</strong>';}},
     {key:'con_acc_remove', label:'Quitaron accesorio', fmt:function(v){return v.toLocaleString();}},
     {key:'netAdds', label:'Neto (add - remove)', fmt:function(v){return v.toLocaleString();}},
