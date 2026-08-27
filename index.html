@@ -274,6 +274,15 @@ thead .sticky-col{background:#141428}
             <option value="Backend">Backend (jul 2025 - feb 2026)</option>
           </select>
         </div>
+        <div class="filter-group">
+          <span class="filter-label">Fase:</span>
+          <select class="filter-select" id="selFaseFin" onchange="renderTab2()">
+            <option value="Todos">Todos</option>
+            <option value="PRE">PRE (antes jun 24)</option>
+            <option value="A/B">A/B (jun 24 - jul 17)</option>
+            <option value="Personal">Personal (jul 18+)</option>
+          </select>
+        </div>
       </div>
       <div class="summary-row" id="summaryFE"></div>
       <div class="table-wrap" style="max-height:600px;overflow-y:auto">
@@ -1053,15 +1062,32 @@ function renderCasos() {
 // ===========================
 // TAB 2: FINANCIADOS
 // ===========================
+function getFaseFin(mes) {
+  if (mes < '2026-06') return 'PRE';
+  if (mes === '2026-06') return 'PRE/A/B';
+  if (mes === '2026-07') return 'A/B/Personal';
+  return 'Personal';
+}
+
 function renderTab2() {
   var origenFilter = document.getElementById('selOrigenFE').value;
   var mesFilter = document.getElementById('selMesFE').value;
   var fuenteFilter = document.getElementById('selFuenteFin').value;
+  var faseFilter = document.getElementById('selFaseFin').value;
 
   var rows = DATA._financiadosMerged || [];
   if (origenFilter !== 'Todos') rows = rows.filter(function(r) { return r.origen === origenFilter; });
   if (mesFilter !== 'Todos') rows = rows.filter(function(r) { return r.mes === mesFilter; });
   if (fuenteFilter !== 'Todos') rows = rows.filter(function(r) { return r.fuente === fuenteFilter; });
+  if (faseFilter !== 'Todos') {
+    rows = rows.filter(function(r) {
+      var fase = getFaseFin(r.mes);
+      if (faseFilter === 'PRE') return fase === 'PRE' || fase === 'PRE/A/B';
+      if (faseFilter === 'A/B') return fase === 'PRE/A/B' || fase === 'A/B/Personal';
+      if (faseFilter === 'Personal') return fase === 'A/B/Personal' || fase === 'Personal';
+      return true;
+    });
+  }
 
   rows = rows.slice().sort(function(a, b) { return b.cantidad - a.cantidad; });
 
