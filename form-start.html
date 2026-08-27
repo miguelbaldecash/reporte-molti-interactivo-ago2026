@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Molti - Form Start Ago 2026 | BaldeCash</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0d0d1a;color:#e8e8f0;font-family:'Inter',sans-serif;line-height:1.5;padding:0 0 60px}
+.container{max-width:1280px;margin:0 auto;padding:0 24px}
+header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.06);margin-bottom:32px;max-width:1280px;margin-left:auto;margin-right:auto}
+header img{height:36px}
+header h1{font-size:18px;font-weight:600;color:#a0a0c0}
+.section{margin-bottom:48px}
+.section-title{font-size:22px;font-weight:700;margin-bottom:8px;color:#fff}
+.section-subtitle{font-size:13px;color:#7a7a9a;margin-bottom:20px;line-height:1.6}
+.summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
+.summary-box{background:rgba(255,255,255,0.03);border-radius:8px;padding:14px;text-align:center;border:1px solid rgba(255,255,255,0.06)}
+.summary-val{font-size:22px;font-weight:700;color:#fff}
+.summary-label{font-size:11px;color:#7a7a9a;margin-top:2px}
+.filters{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-group{display:flex;align-items:center;gap:8px}
+.filter-label{font-size:12px;color:#7a7a9a;text-transform:uppercase;letter-spacing:0.5px}
+.toggle-btn{padding:6px 16px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#b0b0c8;border-radius:6px;cursor:pointer;font-size:13px;font-family:'Inter',sans-serif;transition:all 0.2s}
+.toggle-btn.active{background:rgba(100,120,255,0.15);border-color:rgba(100,120,255,0.4);color:#8090ff}
+.toggle-btn:hover{border-color:rgba(255,255,255,0.2)}
+select.filter-select{padding:6px 12px;border:1px solid rgba(255,255,255,0.1);background:#12122a;color:#b0b0c8;border-radius:6px;font-size:13px;font-family:'Inter',sans-serif;outline:none;cursor:pointer}
+.table-wrap{overflow-x:auto;border-radius:8px;border:1px solid rgba(255,255,255,0.06)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+table th{background:rgba(255,255,255,0.04);color:#8a8ab0;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:0.5px;padding:10px 12px;text-align:left;position:sticky;top:0;white-space:nowrap}
+table td{padding:8px 12px;border-top:1px solid rgba(255,255,255,0.04);white-space:nowrap}
+table tr:hover td{background:rgba(255,255,255,0.03)}
+.num-right{text-align:right;font-variant-numeric:tabular-nums}
+.rlabel{font-weight:600;color:rgba(255,255,255,0.5);font-size:11px;text-transform:uppercase;white-space:nowrap}
+.sticky-col{position:sticky;left:0;background:#0d0d1a;z-index:2;min-width:160px;border-right:1px solid rgba(255,255,255,0.08)}
+thead .sticky-col{background:#141428}
+.fase-pre{color:#5ec4e8}
+.fase-ab{color:#f0a050}
+.fase-personal{color:#80e080}
+.back-link{display:inline-block;margin-bottom:16px;color:#8090ff;font-size:13px;text-decoration:none}
+.back-link:hover{text-decoration:underline}
+.note{background:rgba(255,255,255,0.03);border-radius:8px;padding:16px;border:1px solid rgba(255,255,255,0.06);margin-bottom:24px;font-size:13px;color:#b0b0c8;line-height:1.7}
+.note strong{color:#e8e8f0}
+</style>
+</head>
+<body>
+
+<header>
+  <img src="https://cdn.prod.website-files.com/62141f21700a64ab3f816206/62698bca9d9282dbef03c393_Logo-BaldeCash-Horizontal%202%20(5).png" alt="BaldeCash">
+  <h1>Molti &mdash; Form Start &mdash; Agosto 2026</h1>
+</header>
+
+<div class="container">
+
+  <a class="back-link" href="https://miguelbaldecash.github.io/reporte-molti-interactivo-ago2026/">&larr; Volver al reporte principal</a>
+
+  <div class="section">
+    <div class="section-title">Attach Rate por Form Start</div>
+    <div class="section-subtitle">Datos basados en eventos de <code>user_event</code> del frontend. Mide todos los que abrieron el formulario (form_start) y cuantos agregaron accesorio (accessory_add), hayan enviado solicitud o no.</div>
+
+    <div class="note">
+      <strong>Diferencia con el reporte principal:</strong> El reporte principal mide attach como <em>solicitudes con acc organico / solicitudes totales</em> (solo enviadas). Esta vista mide <em>sesiones con accessory_add / form_starts</em> (incluye abandonos). El numerador aqui es mayor porque captura gente que agrego accesorio pero no envio.
+    </div>
+
+    <div class="filters">
+      <div class="filter-group">
+        <span class="filter-label">Vista:</span>
+        <button class="toggle-btn active" id="btnSem2" onclick="setView2('sem')">Por semana</button>
+        <button class="toggle-btn" id="btnMes2" onclick="setView2('mes')">Por mes</button>
+      </div>
+      <div class="filter-group">
+        <span class="filter-label">Fase:</span>
+        <select class="filter-select" id="selFase2" onchange="renderTable2()">
+          <option value="Todos">Todos</option>
+          <option value="PRE">PRE</option>
+          <option value="A/B">A/B</option>
+          <option value="Personal">Personal</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="summary-row" id="summaryFS"></div>
+
+    <div class="table-wrap">
+      <table id="tablaFS"></table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+var DATA = [
+{"semana":202614,"desde":"2026-04-01","form_starts":16,"con_acc_add":0,"con_acc_remove":0,"con_acc_impression":0,"submitted":0},
+{"semana":202615,"desde":"2026-04-06","form_starts":32,"con_acc_add":0,"con_acc_remove":0,"con_acc_impression":0,"submitted":0},
+{"semana":202616,"desde":"2026-04-13","form_starts":661,"con_acc_add":0,"con_acc_remove":0,"con_acc_impression":0,"submitted":0},
+{"semana":202617,"desde":"2026-04-20","form_starts":1131,"con_acc_add":198,"con_acc_remove":106,"con_acc_impression":0,"submitted":0},
+{"semana":202618,"desde":"2026-04-27","form_starts":602,"con_acc_add":190,"con_acc_remove":98,"con_acc_impression":767,"submitted":0},
+{"semana":202619,"desde":"2026-05-04","form_starts":767,"con_acc_add":170,"con_acc_remove":62,"con_acc_impression":1290,"submitted":0},
+{"semana":202620,"desde":"2026-05-11","form_starts":870,"con_acc_add":208,"con_acc_remove":92,"con_acc_impression":1512,"submitted":0},
+{"semana":202621,"desde":"2026-05-18","form_starts":839,"con_acc_add":255,"con_acc_remove":99,"con_acc_impression":1896,"submitted":504},
+{"semana":202622,"desde":"2026-05-25","form_starts":1236,"con_acc_add":363,"con_acc_remove":165,"con_acc_impression":2771,"submitted":961},
+{"semana":202623,"desde":"2026-06-01","form_starts":696,"con_acc_add":194,"con_acc_remove":105,"con_acc_impression":1519,"submitted":532},
+{"semana":202624,"desde":"2026-06-08","form_starts":834,"con_acc_add":267,"con_acc_remove":127,"con_acc_impression":1832,"submitted":634},
+{"semana":202625,"desde":"2026-06-15","form_starts":1414,"con_acc_add":408,"con_acc_remove":204,"con_acc_impression":3223,"submitted":937},
+{"semana":202626,"desde":"2026-06-22","form_starts":1199,"con_acc_add":348,"con_acc_remove":178,"con_acc_impression":2522,"submitted":779},
+{"semana":202627,"desde":"2026-06-29","form_starts":535,"con_acc_add":207,"con_acc_remove":133,"con_acc_impression":1210,"submitted":347},
+{"semana":202628,"desde":"2026-07-06","form_starts":927,"con_acc_add":270,"con_acc_remove":147,"con_acc_impression":1834,"submitted":653},
+{"semana":202629,"desde":"2026-07-13","form_starts":938,"con_acc_add":268,"con_acc_remove":135,"con_acc_impression":1874,"submitted":651},
+{"semana":202630,"desde":"2026-07-20","form_starts":946,"con_acc_add":299,"con_acc_remove":165,"con_acc_impression":1842,"submitted":657},
+{"semana":202631,"desde":"2026-07-27","form_starts":1086,"con_acc_add":357,"con_acc_remove":178,"con_acc_impression":2073,"submitted":790},
+{"semana":202632,"desde":"2026-08-03","form_starts":785,"con_acc_add":253,"con_acc_remove":146,"con_acc_impression":1342,"submitted":628},
+{"semana":202633,"desde":"2026-08-10","form_starts":1021,"con_acc_add":229,"con_acc_remove":130,"con_acc_impression":1652,"submitted":745},
+{"semana":202634,"desde":"2026-08-17","form_starts":1713,"con_acc_add":411,"con_acc_remove":249,"con_acc_impression":2456,"submitted":1349},
+{"semana":202635,"desde":"2026-08-24","form_starts":1477,"con_acc_add":359,"con_acc_remove":189,"con_acc_impression":2093,"submitted":1126}
+];
+
+// Add fase and derived metrics
+DATA.forEach(function(d) {
+  d.fase = d.desde < '2026-06-24' ? 'PRE' : d.desde < '2026-07-18' ? 'A/B' : 'Personal';
+  d.attachRate = d.form_starts > 0 ? Math.round(d.con_acc_add / d.form_starts * 1000) / 10 : 0;
+  d.conversionRate = d.form_starts > 0 ? Math.round(d.submitted / d.form_starts * 1000) / 10 : 0;
+  d.netAdds = d.con_acc_add - d.con_acc_remove;
+  d.removeRate = d.con_acc_add > 0 ? Math.round(d.con_acc_remove / d.con_acc_add * 1000) / 10 : 0;
+  // Week label
+  var parts = d.desde.split('-');
+  d.label = parts[2] + '/' + parts[1];
+});
+
+var currentView2 = 'sem';
+
+function setView2(v) {
+  currentView2 = v;
+  document.getElementById('btnSem2').classList.toggle('active', v === 'sem');
+  document.getElementById('btnMes2').classList.toggle('active', v === 'mes');
+  renderTable2();
+}
+
+function faseClass(f) {
+  if (f === 'PRE') return 'fase-pre';
+  if (f === 'A/B') return 'fase-ab';
+  return 'fase-personal';
+}
+
+function renderTable2() {
+  var faseFilter = document.getElementById('selFase2').value;
+  var filtered = DATA;
+  if (faseFilter !== 'Todos') filtered = DATA.filter(function(d) { return d.fase === faseFilter; });
+
+  var groups;
+  if (currentView2 === 'sem') {
+    groups = filtered.map(function(d) {
+      return {key: d.semana, label: d.label, fase: d.fase, form_starts: d.form_starts, con_acc_add: d.con_acc_add, con_acc_remove: d.con_acc_remove, con_acc_impression: d.con_acc_impression, submitted: d.submitted};
+    });
+  } else {
+    var byMonth = {};
+    var months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    filtered.forEach(function(d) {
+      var mk = d.desde.substring(0, 7);
+      if (!byMonth[mk]) byMonth[mk] = {key: mk, label: months[parseInt(d.desde.substring(5,7)) - 1], fase: d.fase, form_starts: 0, con_acc_add: 0, con_acc_remove: 0, con_acc_impression: 0, submitted: 0};
+      var g = byMonth[mk];
+      g.form_starts += d.form_starts;
+      g.con_acc_add += d.con_acc_add;
+      g.con_acc_remove += d.con_acc_remove;
+      g.con_acc_impression += d.con_acc_impression;
+      g.submitted += d.submitted;
+    });
+    groups = Object.values(byMonth).sort(function(a, b) { return a.key < b.key ? -1 : 1; });
+  }
+
+  // Derived per group
+  groups.forEach(function(g) {
+    g.attachRate = g.form_starts > 0 ? Math.round(g.con_acc_add / g.form_starts * 1000) / 10 : 0;
+    g.conversionRate = g.form_starts > 0 ? Math.round(g.submitted / g.form_starts * 1000) / 10 : 0;
+    g.removeRate = g.con_acc_add > 0 ? Math.round(g.con_acc_remove / g.con_acc_add * 1000) / 10 : 0;
+    g.netAdds = g.con_acc_add - g.con_acc_remove;
+  });
+
+  // Totals
+  var totals = {form_starts:0, con_acc_add:0, con_acc_remove:0, con_acc_impression:0, submitted:0, fase:''};
+  groups.forEach(function(g) {
+    totals.form_starts += g.form_starts;
+    totals.con_acc_add += g.con_acc_add;
+    totals.con_acc_remove += g.con_acc_remove;
+    totals.con_acc_impression += g.con_acc_impression;
+    totals.submitted += g.submitted;
+  });
+  totals.attachRate = totals.form_starts > 0 ? Math.round(totals.con_acc_add / totals.form_starts * 1000) / 10 : 0;
+  totals.conversionRate = totals.form_starts > 0 ? Math.round(totals.submitted / totals.form_starts * 1000) / 10 : 0;
+  totals.removeRate = totals.con_acc_add > 0 ? Math.round(totals.con_acc_remove / totals.con_acc_add * 1000) / 10 : 0;
+  totals.netAdds = totals.con_acc_add - totals.con_acc_remove;
+
+  // Summary
+  var sh = '';
+  sh += '<div class="summary-box"><div class="summary-val">' + totals.form_starts.toLocaleString() + '</div><div class="summary-label">Form starts</div></div>';
+  sh += '<div class="summary-box"><div class="summary-val">' + totals.con_acc_add.toLocaleString() + '</div><div class="summary-label">Con accessory_add</div></div>';
+  sh += '<div class="summary-box"><div class="summary-val" style="color:' + (totals.attachRate > 25 ? '#00e676' : totals.attachRate < 15 ? '#e53e3e' : '#ffdf60') + '">' + totals.attachRate + '%</div><div class="summary-label">Attach rate</div></div>';
+  sh += '<div class="summary-box"><div class="summary-val">' + totals.submitted.toLocaleString() + '</div><div class="summary-label">Submitted</div></div>';
+  sh += '<div class="summary-box"><div class="summary-val">' + totals.conversionRate + '%</div><div class="summary-label">Conversion form</div></div>';
+  document.getElementById('summaryFS').innerHTML = sh;
+
+  // Transposed table
+  var metrics = [
+    {key:'fase', label:'Fase', fmt:function(v,r){return '<span class="'+faseClass(r.fase)+'">'+r.fase+'</span>';}},
+    {key:'form_starts', label:'Form starts', fmt:function(v){return v.toLocaleString();}},
+    {key:'con_acc_impression', label:'Vieron accesorios', fmt:function(v){return v.toLocaleString();}},
+    {key:'con_acc_add', label:'Agregaron accesorio', fmt:function(v){return '<strong>'+v.toLocaleString()+'</strong>';}},
+    {key:'con_acc_remove', label:'Quitaron accesorio', fmt:function(v){return v.toLocaleString();}},
+    {key:'netAdds', label:'Neto (add - remove)', fmt:function(v){return v.toLocaleString();}},
+    {key:'attachRate', label:'% Attach (add/form_start)', fmt:function(v){return '<strong style="color:'+(v>25?'#00e676':v<15?'#e53e3e':'#ffdf60')+'">'+v+'%</strong>';}},
+    {key:'removeRate', label:'% Remove (rem/add)', fmt:function(v){return '<span style="color:#e08080">'+v+'%</span>';}},
+    {key:'submitted', label:'Submitted', fmt:function(v){return v.toLocaleString();}},
+    {key:'conversionRate', label:'% Conversion (sub/form)', fmt:function(v){return v+'%';}}
+  ];
+
+  var h = '<thead><tr><th class="sticky-col"></th>';
+  groups.forEach(function(g) { h += '<th>' + g.label + '</th>'; });
+  h += '<th style="color:#ffdf60">Total</th>';
+  h += '</tr></thead><tbody>';
+
+  metrics.forEach(function(m) {
+    h += '<tr><td class="sticky-col rlabel">' + m.label + '</td>';
+    groups.forEach(function(g) {
+      h += '<td>' + m.fmt(g[m.key], g) + '</td>';
+    });
+    h += '<td style="font-weight:600">' + m.fmt(totals[m.key], totals) + '</td>';
+    h += '</tr>';
+  });
+  h += '</tbody>';
+  document.getElementById('tablaFS').innerHTML = h;
+}
+
+renderTable2();
+</script>
+</body>
+</html>
