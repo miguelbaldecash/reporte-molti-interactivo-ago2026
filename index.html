@@ -957,8 +957,7 @@ function renderTab2() {
   document.getElementById('summaryFE').innerHTML = sh;
 
   // Table
-  var h = '<tr><th>Mes</th><th>Accesorio</th><th>Precio</th><th>Cuota</th><th>Origen</th><th>Cantidad</th></tr>';
-  document.getElementById('tablaFEHead').innerHTML = '';
+  document.getElementById('tablaFEHead').innerHTML = '<tr><th>Mes</th><th>Accesorio</th><th>Precio</th><th>Cuota</th><th>Origen</th><th>Cantidad</th></tr>';
   var tbody = '';
   rows.forEach(function(r) {
     var badgeClass = 'badge-' + (r.origen || 'indeterminado');
@@ -971,7 +970,7 @@ function renderTab2() {
     tbody += '<td class="num-right">' + r.cantidad + '</td>';
     tbody += '</tr>';
   });
-  document.getElementById('tablaFE').innerHTML = '<thead>' + h + '</thead><tbody>' + tbody + '</tbody>';
+  document.getElementById('tablaFEBody').innerHTML = tbody;
 
   // Backend table
   var beRows = DATA.financiadosBE.slice().sort(function(a, b) { return b.cantidad - a.cantidad; });
@@ -985,7 +984,8 @@ function renderTab2() {
     btbody += '<td class="num-right">' + r.cantidad + '</td>';
     btbody += '</tr>';
   });
-  document.getElementById('tablaBE').innerHTML = '<thead>' + bh + '</thead><tbody>' + btbody + '</tbody>';
+  document.getElementById('tablaBEHead').innerHTML = bh;
+  document.getElementById('tablaBEBody').innerHTML = btbody;
 
   // Batches grid
   renderBatches();
