@@ -720,8 +720,6 @@ function renderTable1() {
     {key:'conApp', label:'Con solicitud', fmt:function(v){return '<strong>'+v.toLocaleString()+'</strong>';}},
     {key:'conAccOrg', label:'Con acc organico', fmt:function(v){return v.toLocaleString();}},
     {key:'attach', label:'% Attach rate', fmt:function(v){return '<strong style="color:'+(v>12?'#00e676':v<8?'#e53e3e':'#ffdf60')+'">'+v+'%</strong>';}},
-    {key:'conAccOrgFE', label:'Con acc org (form_start)', fmt:function(v){return v.toLocaleString();}},
-    {key:'attachFE', label:'% Attach (form_start)', fmt:function(v){return '<strong style="color:'+(v>12?'#00e676':v<8?'#e53e3e':'#ffdf60')+'">'+v+'%</strong>';}},
     {key:'itemsProm', label:'# acc / form', fmt:function(v){return v;}},
     {key:'cuotaProm', label:'Cuota prom adic', fmt:function(v){return 'S/'+v;}},
     {key:'firmados', label:'Firmados', fmt:function(v){return v.toLocaleString();}}
