@@ -603,7 +603,7 @@ function renderTable1() {
     if (!groups[key]) {
       groups[key] = {
         key: key, label: label, fase: s.fase,
-        sesiones: 0, conApp: 0, conAccOrg: 0,
+        sesiones: 0, conApp: 0, conAccOrg: 0, conAccOrgFE: 0,
         orgAccCount: 0, orgCuotaSum: 0, orgCuotaN: 0,
         firmados: 0
       };
@@ -616,6 +616,7 @@ function renderTable1() {
     var orgAccs = s.accesorios.filter(function(a) { return a.origen === 'usuario'; });
     if (orgAccs.length > 0) {
       g.conAccOrg++;
+      g.conAccOrgFE++;
       g.orgAccCount += orgAccs.length;
       var sesionCuota = 0;
       orgAccs.forEach(function(a) {
@@ -704,6 +705,7 @@ function renderTable1() {
   data.forEach(function(g) {
     var attachBase = g.solBackend > 0 ? g.solBackend : g.conApp;
     g.attach = attachBase > 0 ? Math.round(g.conAccOrg / attachBase * 1000) / 10 : 0;
+    g.attachFE = g.sesiones > 0 ? Math.round(g.conAccOrgFE / g.sesiones * 1000) / 10 : 0;
     g.itemsProm = g.conAccOrg > 0 ? Math.round(g.orgAccCount / g.conAccOrg * 10) / 10 : 0;
     g.cuotaProm = g.orgCuotaN > 0 ? Math.round(g.orgCuotaSum / g.orgCuotaN) : 0;
   });
@@ -718,6 +720,8 @@ function renderTable1() {
     {key:'conApp', label:'Con solicitud', fmt:function(v){return '<strong>'+v.toLocaleString()+'</strong>';}},
     {key:'conAccOrg', label:'Con acc organico', fmt:function(v){return v.toLocaleString();}},
     {key:'attach', label:'% Attach rate', fmt:function(v){return '<strong style="color:'+(v>12?'#00e676':v<8?'#e53e3e':'#ffdf60')+'">'+v+'%</strong>';}},
+    {key:'conAccOrgFE', label:'Con acc org (form_start)', fmt:function(v){return v.toLocaleString();}},
+    {key:'attachFE', label:'% Attach (form_start)', fmt:function(v){return '<strong style="color:'+(v>12?'#00e676':v<8?'#e53e3e':'#ffdf60')+'">'+v+'%</strong>';}},
     {key:'itemsProm', label:'# acc / form', fmt:function(v){return v;}},
     {key:'cuotaProm', label:'Cuota prom adic', fmt:function(v){return 'S/'+v;}},
     {key:'firmados', label:'Firmados', fmt:function(v){return v.toLocaleString();}}
@@ -729,11 +733,12 @@ function renderTable1() {
   });
 
   // Totals
-  var totals = {sesiones:0, conApp:0, conAccOrg:0, orgAccCount:0, orgCuotaSum:0, orgCuotaN:0, firmados:0, fase:'', solBackend:0, webAntigua:0, nuevaWeb:0};
+  var totals = {sesiones:0, conApp:0, conAccOrg:0, conAccOrgFE:0, orgAccCount:0, orgCuotaSum:0, orgCuotaN:0, firmados:0, fase:'', solBackend:0, webAntigua:0, nuevaWeb:0};
   data.forEach(function(d) {
     totals.sesiones += d.sesiones;
     totals.conApp += d.conApp;
     totals.conAccOrg += d.conAccOrg;
+    totals.conAccOrgFE += d.conAccOrgFE;
     totals.orgAccCount += d.orgAccCount;
     totals.orgCuotaSum += d.orgCuotaSum;
     totals.orgCuotaN += d.orgCuotaN;
@@ -744,6 +749,7 @@ function renderTable1() {
   });
   var totalsAttachBase = totals.solBackend > 0 ? totals.solBackend : totals.conApp;
   totals.attach = totalsAttachBase > 0 ? Math.round(totals.conAccOrg / totalsAttachBase * 1000) / 10 : 0;
+  totals.attachFE = totals.sesiones > 0 ? Math.round(totals.conAccOrgFE / totals.sesiones * 1000) / 10 : 0;
   totals.itemsProm = totals.conAccOrg > 0 ? Math.round(totals.orgAccCount / totals.conAccOrg * 10) / 10 : 0;
   totals.cuotaProm = totals.orgCuotaN > 0 ? Math.round(totals.orgCuotaSum / totals.orgCuotaN) : 0;
   h += '<th style="color:#ffdf60">Total</th>';
