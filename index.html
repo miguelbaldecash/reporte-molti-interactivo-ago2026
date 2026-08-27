@@ -580,10 +580,11 @@ function renderTable1() {
     if (orgAccs.length > 0) {
       g.conAccOrg++;
       g.orgAccCount += orgAccs.length;
+      var sesionCuota = 0;
       orgAccs.forEach(function(a) {
-        var c = parseFloat(a.cuota);
-        if (c > 0) { g.orgCuotaSum += c; g.orgCuotaN++; }
+        sesionCuota += parseFloat(a.cuota) || 0;
       });
+      if (sesionCuota > 0) { g.orgCuotaSum += sesionCuota; g.orgCuotaN++; }
     }
   });
 
@@ -1043,9 +1044,9 @@ function computeCodigos() {
       if (orgAccs.length > 0) {
         conAcc++;
         accCount += orgAccs.length;
-        orgAccs.forEach(function(a) {
-          if (a.cuota > 0) { cuotaSum += a.cuota; cuotaN++; }
-        });
+        var sesionCuota = 0;
+        orgAccs.forEach(function(a) { sesionCuota += (a.cuota || 0); });
+        if (sesionCuota > 0) { cuotaSum += sesionCuota; cuotaN++; }
       }
     });
     var attach = inicioForm > 0 ? Math.round(conAcc / inicioForm * 1000) / 10 : 0;
