@@ -325,37 +325,65 @@ thead .sticky-col{background:#141428}
 // DATA PREPARATION
 // ===========================
 
-// Merge accesorios into sesiones
-(function() {
-  // Index accesorios by application_id
-  var accByApp = {};
-  DATA.accesorios.forEach(function(acc) {
-    var aid = acc.application_id;
-    if (!aid) return;
-    if (!accByApp[aid]) accByApp[aid] = [];
-    accByApp[aid].push(acc);
-  });
-  // Attach to each session
-  DATA.sesiones.forEach(function(s) {
-    s.accesorios = [];
-    if (s.application_id && accByApp[s.application_id]) {
-      s.accesorios = accByApp[s.application_id];
-    }
-  });
-})();
+// Normalize field names from snake_case to camelCase
+DATA.sesiones = DATA.sesiones.map(function(s) {
+  return {
+    dia: s.dia,
+    sem: String(s.semana),
+    applicationId: s.application_id,
+    landing: s.landing_name || 'Home',
+    equipoType: s.equipo_type,
+    equipoBrand: s.equipo_brand,
+    equipoModel: s.equipo_model,
+    equipoPrice: parseFloat(s.equipo_price) || 0,
+    statusId: s.status_id,
+    statusName: s.status_name,
+    firmado: !!s.firmado,
+    delivery: s.delivery_status || '',
+    aprobado: !!s.aprobado,
+    cuotaEquipo: parseFloat(s.cuota_equipo) || 0,
+    moltiVersion: s.molti_version,
+    hasAppSubmitted: !!s.has_app_submitted,
+    fase: s.dia < '2026-06-24' ? 'PRE' : s.dia < '2026-07-18' ? 'A/B' : 'Personal',
+    codigoVersion: s.dia >= '2026-08-13' ? 'C3' : s.dia >= '2026-07-31' ? 'C2' : s.dia >= '2026-07-20' ? 'C1' : null,
+    accesorios: [] // will be filled from merge
+  };
+});
 
-// Phase helper: PRE = before 2026-07-01, A/B = 2026-07-01 to 2026-07-19, Personal = 2026-07-20+
+// Normalize accesorios and merge into sesiones
+var accByApp = {};
+DATA.accesorios.forEach(function(a) {
+  var appId = a.application_id;
+  if (!appId) return;
+  if (!accByApp[appId]) accByApp[appId] = [];
+  accByApp[appId].push({
+    name: a.accesorio_name,
+    categoryId: a.category_id,
+    category: a.category_name,
+    price: parseFloat(a.unit_price) || 0,
+    cuota: parseFloat(a.cuota) || 0,
+    isCombo: a.combo_item_id != null,
+    origen: a.origen || 'indeterminado'
+  });
+});
+DATA.sesiones.forEach(function(s) {
+  if (s.applicationId && accByApp[s.applicationId]) {
+    s.accesorios = accByApp[s.applicationId];
+  }
+});
+
+// Phase helper uses pre-computed fase field
 function getPhase(dia) {
-  if (dia < '2026-07-01') return 'PRE';
-  if (dia < '2026-07-20') return 'A/B';
+  if (dia < '2026-06-24') return 'PRE';
+  if (dia < '2026-07-18') return 'A/B';
   return 'Personal';
 }
 
-// Week label from semana number: use the earliest date in that week
+// Week label from sem: use the earliest date in that week
 var weekLabelCache = {};
 (function() {
   DATA.sesiones.forEach(function(s) {
-    var w = s.semana;
+    var w = s.sem;
     if (!weekLabelCache[w] || s.dia < weekLabelCache[w]) {
       weekLabelCache[w] = s.dia;
     }
@@ -415,13 +443,13 @@ function populateFilters() {
   });
   sel.innerHTML = h;
 
-  // Molti version
+  // Molti version (C1/C2/C3 based on date ranges)
   sel = document.getElementById('selMolti');
   h = '<option value="Todos">Todos</option>';
-  h += '<option value="null">Sin version (PRE)</option>';
-  DATA.lookups.moltiVersions.forEach(function(v) {
-    h += '<option value="' + v + '">' + v + '</option>';
-  });
+  h += '<option value="null">Sin version (pre-ranker)</option>';
+  h += '<option value="C1">C1 -- Base (20 jul - 31 jul)</option>';
+  h += '<option value="C2">C2 -- Memoria de attach (31 jul - 13 ago)</option>';
+  h += '<option value="C3">C3 -- Compatibilidad (13 ago - 24 ago)</option>';
   sel.innerHTML = h;
 
   // Tab 2 mes filter
@@ -443,13 +471,13 @@ function getFilteredSessions() {
   var molti = document.getElementById('selMolti').value;
 
   return DATA.sesiones.filter(function(s) {
-    if (fase !== 'Todos' && getPhase(s.dia) !== fase) return false;
-    if (landing !== 'Todos' && s.landing_name !== landing) return false;
-    if (tipo !== 'Todos' && s.equipo_type !== tipo) return false;
-    if (brand !== 'Todos' && s.equipo_brand !== brand) return false;
+    if (fase !== 'Todos' && s.fase !== fase) return false;
+    if (landing !== 'Todos' && s.landing !== landing) return false;
+    if (tipo !== 'Todos' && s.equipoType !== tipo) return false;
+    if (brand !== 'Todos' && s.equipoBrand !== brand) return false;
     if (molti !== 'Todos') {
-      if (molti === 'null' && s.molti_version !== null) return false;
-      if (molti !== 'null' && s.molti_version !== molti) return false;
+      if (molti === 'null' && s.codigoVersion !== null) return false;
+      if (molti !== 'null' && s.codigoVersion !== molti) return false;
     }
     return true;
   });
@@ -489,7 +517,7 @@ function faseClass(f) {
 function renderSummary() {
   var sessions = getFilteredSessions();
   var total = sessions.length;
-  var formStarts = sessions.filter(function(s) { return s.has_app_submitted === 1 || s.application_id; }).length;
+  var formStarts = sessions.filter(function(s) { return s.hasAppSubmitted || s.applicationId; }).length;
   var withOrgAcc = 0;
   var orgAccCount = 0;
   var orgAccCuotaSum = 0;
@@ -508,7 +536,7 @@ function renderSummary() {
   var attachRate = formStarts > 0 ? (withOrgAcc / formStarts * 100) : 0;
   var avgItems = withOrgAcc > 0 ? (orgAccCount / withOrgAcc) : 0;
   var avgCuota = orgAccCuotaN > 0 ? (orgAccCuotaSum / orgAccCuotaN) : 0;
-  var firmados = sessions.filter(function(s) { return s.firmado === 1; }).length;
+  var firmados = sessions.filter(function(s) { return s.firmado; }).length;
 
   var html = '';
   html += '<div class="summary-box"><div class="summary-val">' + total.toLocaleString() + '</div><div class="summary-label">Sesiones</div></div>';
@@ -529,15 +557,15 @@ function renderTable1() {
   sessions.forEach(function(s) {
     var key, label;
     if (currentView === 'sem') {
-      key = s.semana;
-      label = weekLabelCache[s.semana] || String(s.semana);
+      key = s.sem;
+      label = weekLabelCache[s.sem] || s.sem;
     } else {
       key = getMonthKey(s.dia);
       label = getMonth(s.dia);
     }
     if (!groups[key]) {
       groups[key] = {
-        key: key, label: label, fase: getPhase(s.dia),
+        key: key, label: label, fase: s.fase,
         sesiones: 0, conApp: 0, conAccOrg: 0,
         orgAccCount: 0, orgCuotaSum: 0, orgCuotaN: 0,
         firmados: 0
@@ -545,8 +573,8 @@ function renderTable1() {
     }
     var g = groups[key];
     g.sesiones++;
-    if (s.application_id) g.conApp++;
-    if (s.firmado === 1) g.firmados++;
+    if (s.applicationId) g.conApp++;
+    if (s.firmado) g.firmados++;
 
     var orgAccs = s.accesorios.filter(function(a) { return a.origen === 'usuario'; });
     if (orgAccs.length > 0) {
@@ -630,10 +658,10 @@ function updateModeloFilter() {
   var accs = {};
   // Count organic accessories by name
   DATA.sesiones.forEach(function(s) {
-    if (equipo !== 'Todos' && s.equipo_type !== equipo) return;
+    if (equipo !== 'Todos' && s.equipoType !== equipo) return;
     s.accesorios.forEach(function(a) {
       if (a.origen !== 'usuario') return;
-      accs[a.accesorio_name] = (accs[a.accesorio_name] || 0) + 1;
+      accs[a.name] = (accs[a.name] || 0) + 1;
     });
   });
   var sorted = Object.entries(accs).sort(function(a,b) { return b[1] - a[1]; });
@@ -664,14 +692,14 @@ function renderChart() {
   // For each day: count sessions with app (base), count organic acc by name
   var dayData = {};
   DATA.sesiones.forEach(function(s) {
-    if (equipoFilter !== 'Todos' && s.equipo_type !== equipoFilter) return;
+    if (equipoFilter !== 'Todos' && s.equipoType !== equipoFilter) return;
     var d = s.dia;
     if (!dayData[d]) dayData[d] = { base: 0, accs: {} };
-    if (s.application_id) dayData[d].base++;
+    if (s.applicationId) dayData[d].base++;
     s.accesorios.forEach(function(a) {
       if (a.origen !== 'usuario') return;
-      if (modeloFilter !== 'Todos' && a.accesorio_name !== modeloFilter) return;
-      dayData[d].accs[a.accesorio_name] = (dayData[d].accs[a.accesorio_name] || 0) + 1;
+      if (modeloFilter !== 'Todos' && a.name !== modeloFilter) return;
+      dayData[d].accs[a.name] = (dayData[d].accs[a.name] || 0) + 1;
     });
   });
 
@@ -749,8 +777,8 @@ function renderChart() {
 
   // Phase separators
   var phaseLines = [
-    { date: '2026-07-01', label: 'A/B' },
-    { date: '2026-07-20', label: 'Personal' }
+    { date: '2026-06-24', label: 'A/B' },
+    { date: '2026-07-18', label: 'Personal' }
   ];
   ctx.fillStyle = 'rgba(94,196,232,0.6)';
   ctx.font = '11px Inter, sans-serif';
@@ -859,8 +887,8 @@ function renderCasos() {
   sessions.forEach(function(s) {
     var orgAccs = s.accesorios.filter(function(a) { return a.origen === 'usuario'; });
     if (orgAccs.length === 0) return;
-    if (!s.equipo_model) return;
-    var w = s.semana;
+    if (!s.equipoModel) return;
+    var w = s.sem;
     if (!byWeek[w]) byWeek[w] = [];
     byWeek[w].push(s);
   });
@@ -882,16 +910,16 @@ function renderCasos() {
     html += '<div style="display:none">';
     sample.forEach(function(s) {
       var orgAccs = s.accesorios.filter(function(a) { return a.origen === 'usuario'; });
-      var accList = orgAccs.map(function(a) { return a.accesorio_name + ' (S/' + parseFloat(a.unit_price).toLocaleString() + ')'; }).join(', ');
-      var cuotaSum = orgAccs.reduce(function(sum, a) { return sum + (parseFloat(a.cuota) || 0); }, 0);
-      var borderColor = s.equipo_type === 'laptop' ? '#474FD5' : s.equipo_type === 'tablet' ? '#FF6B35' : '#00a651';
+      var accList = orgAccs.map(function(a) { return a.name + ' (S/' + a.price.toLocaleString() + ')'; }).join(', ');
+      var cuotaSum = orgAccs.reduce(function(sum, a) { return sum + (a.cuota || 0); }, 0);
+      var borderColor = s.equipoType === 'laptop' ? '#474FD5' : s.equipoType === 'tablet' ? '#FF6B35' : '#00a651';
       html += '<div class="caso-card" style="border-left-color:' + borderColor + '">';
       html += '<div style="display:flex;justify-content:space-between;align-items:baseline">';
-      html += '<div class="caso-equipo">' + (s.equipo_model || '?') + ' <span style="font-weight:400;color:rgba(255,255,255,0.4)">(S/' + parseFloat(s.equipo_price || 0).toLocaleString() + ')</span></div>';
-      html += '<div style="font-size:11px;color:rgba(255,255,255,0.3)">App: ' + (s.application_id || '-') + ' | ' + s.dia + '</div>';
+      html += '<div class="caso-equipo">' + (s.equipoModel || '?') + ' <span style="font-weight:400;color:rgba(255,255,255,0.4)">(S/' + s.equipoPrice.toLocaleString() + ')</span></div>';
+      html += '<div style="font-size:11px;color:rgba(255,255,255,0.3)">App: ' + (s.applicationId || '-') + ' | ' + s.dia + '</div>';
       html += '</div>';
       html += '<div class="caso-acc">Accesorios: ' + accList + '</div>';
-      html += '<div class="caso-meta">' + (s.equipo_type || '') + ' | ' + orgAccs.length + ' acc org | cuota adic S/' + cuotaSum.toFixed(0) + '/mes</div>';
+      html += '<div class="caso-meta">' + (s.equipoType || '') + ' | ' + orgAccs.length + ' acc org | cuota adic S/' + cuotaSum.toFixed(0) + '/mes</div>';
       html += '</div>';
     });
     html += '</div>';
@@ -998,17 +1026,17 @@ function renderBatches() {
 // Simplified: use date ranges for C1/C2/C3
 function computeCodigos() {
   var ranges = [
-    { label: 'C1', desde: '2026-07-20', hasta: '2026-07-31', periodo: '20-31 jul (11d)' },
-    { label: 'C2', desde: '2026-07-31', hasta: '2026-08-13', periodo: '31 jul - 13 ago (13d)' },
-    { label: 'C3', desde: '2026-08-13', hasta: '2026-08-24', periodo: '13-24 ago (11d)' }
+    { label: 'C1', periodo: '20-31 jul (11d)' },
+    { label: 'C2', periodo: '31 jul - 13 ago (13d)' },
+    { label: 'C3', periodo: '13-24 ago (11d)' }
   ];
   var codigos = [];
   ranges.forEach(function(r) {
     var sInRange = DATA.sesiones.filter(function(s) {
-      return s.dia >= r.desde && s.dia < r.hasta && s.molti_version !== null;
+      return s.codigoVersion === r.label && s.moltiVersion !== null;
     });
     var servidas = sInRange.length;
-    var inicioForm = sInRange.filter(function(s) { return s.application_id; }).length;
+    var inicioForm = sInRange.filter(function(s) { return s.applicationId; }).length;
     var conAcc = 0, accCount = 0, cuotaSum = 0, cuotaN = 0;
     sInRange.forEach(function(s) {
       var orgAccs = s.accesorios.filter(function(a) { return a.origen === 'usuario'; });
@@ -1016,8 +1044,7 @@ function computeCodigos() {
         conAcc++;
         accCount += orgAccs.length;
         orgAccs.forEach(function(a) {
-          var c = parseFloat(a.cuota);
-          if (c > 0) { cuotaSum += c; cuotaN++; }
+          if (a.cuota > 0) { cuotaSum += a.cuota; cuotaN++; }
         });
       }
     });
