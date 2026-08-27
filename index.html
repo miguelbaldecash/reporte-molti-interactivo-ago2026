@@ -1075,7 +1075,6 @@ function renderTab2() {
   });
   var sh = '';
   sh += '<div class="summary-box"><div class="summary-val">' + totalQty.toLocaleString() + '</div><div class="summary-label">Unidades</div></div>';
-  sh += '<div class="summary-box"><div class="summary-val">S/' + Math.round(totalRev).toLocaleString() + '</div><div class="summary-label">Valor total</div></div>';
   sh += '<div class="summary-box"><div class="summary-val">' + uniqueAcc.size + '</div><div class="summary-label">Accesorios distintos</div></div>';
   document.getElementById('summaryFE').innerHTML = sh;
 
@@ -1107,12 +1106,13 @@ function renderBatches() {
     if (!bySem[b.sem]) bySem[b.sem] = { desde: b.desde, items: [] };
     bySem[b.sem].items.push(b);
   });
+  DATA._batchBySem = bySem;
   var html = '';
   Object.keys(bySem).sort().forEach(function(sem) {
     var g = bySem[sem];
     var dateStr = g.desde ? g.desde.substring(0, 10) : '';
     var items = g.items.sort(function(a, b) { return b.veces_mostrado - a.veces_mostrado; });
-    html += '<div class="batch-card">';
+    html += '<div class="batch-card" style="cursor:pointer" onclick="openBatchPopup(\'' + sem + '\')">';
     html += '<div class="batch-sem">Sem ' + sem + ' (' + dateStr + ')</div>';
     html += '<div class="batch-items">';
     items.slice(0, 10).forEach(function(it) {
@@ -1125,6 +1125,37 @@ function renderBatches() {
   });
   document.getElementById('batchGrid').innerHTML = html;
 }
+
+function openBatchPopup(sem) {
+  var g = DATA._batchBySem[sem];
+  if (!g) return;
+  var dateStr = g.desde ? g.desde.substring(0, 10) : '';
+  var items = g.items.sort(function(a, b) { return b.veces_mostrado - a.veces_mostrado; });
+  document.getElementById('casoPopupTitle').textContent = 'Batch Sem ' + sem + ' (' + dateStr + ') — ' + items.length + ' accesorios';
+  var ph = '<div style="max-height:60vh;overflow-y:auto">';
+  ph += '<table style="width:100%;border-collapse:collapse;font-size:13px">';
+  ph += '<thead><tr><th style="text-align:left;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.1);color:#8a8ab0">#</th>';
+  ph += '<th style="text-align:left;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.1);color:#8a8ab0">Accesorio</th>';
+  ph += '<th style="text-align:right;padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.1);color:#8a8ab0">Veces mostrado</th></tr></thead><tbody>';
+  items.forEach(function(it, idx) {
+    ph += '<tr><td style="padding:4px 10px;border-bottom:1px solid rgba(255,255,255,0.04);color:#7a7a9a">' + (idx + 1) + '</td>';
+    ph += '<td style="padding:4px 10px;border-bottom:1px solid rgba(255,255,255,0.04)">' + it.accesorio + '</td>';
+    ph += '<td style="padding:4px 10px;border-bottom:1px solid rgba(255,255,255,0.04);text-align:right;font-variant-numeric:tabular-nums">' + it.veces_mostrado.toLocaleString() + '</td></tr>';
+  });
+  ph += '</tbody></table></div>';
+  document.getElementById('casoPopupBody').innerHTML = ph;
+  // Hide the "Otros 3 casos" button for batch popup
+  var btn = document.querySelector('#casoPopup .nueva-muestra-btn');
+  if (btn) btn.style.display = 'none';
+  document.getElementById('casoPopup').style.display = 'flex';
+}
+
+var _origCloseCasoPopup = closeCasoPopup;
+closeCasoPopup = function() {
+  _origCloseCasoPopup();
+  var btn = document.querySelector('#casoPopup .nueva-muestra-btn');
+  if (btn) btn.style.display = '';
+};
 
 // ===========================
 // TAB 3: CODIGOS & TABLA 3 (preserved from working version)
