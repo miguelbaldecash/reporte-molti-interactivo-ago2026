@@ -105,6 +105,9 @@ thead .sticky-col{background:#141428}
 .badge-preadmision{background:rgba(94,196,232,0.15);color:#5ec4e8}
 .badge-legacy{background:rgba(180,180,200,0.15);color:#a0a0c0}
 .badge-indeterminado{background:rgba(180,180,200,0.1);color:#7a7a9a}
+.badge-usuario\ \(legacy\){background:rgba(200,150,80,0.12);color:#c8a060}
+.badge-Frontend{background:rgba(100,120,255,0.12);color:#8090ff}
+.badge-Backend{background:rgba(180,180,200,0.12);color:#a0a0c0}
 
 /* Summary row */
 .summary-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px}
@@ -239,8 +242,8 @@ thead .sticky-col{background:#141428}
   <div class="tab-panel" id="tab2">
 
     <div class="section">
-      <div class="section-title">Accesorios Financiados (Frontend)</div>
-      <div class="section-subtitle">Accesorios adjuntados en la solicitud web, agrupados por mes. Fuente: solicitudes con accesorio en frontend.</div>
+      <div class="section-title">Accesorios Financiados</div>
+      <div class="section-subtitle">Jul 2025 - Ago 2026. Backend (BaldeBOT legacy, jul25-feb26) + Frontend (nueva web, mar26+).</div>
       <div class="filters">
         <div class="filter-group">
           <span class="filter-label">Origen:</span>
@@ -250,6 +253,7 @@ thead .sticky-col{background:#141428}
             <option value="combo">Combo</option>
             <option value="preadmision">Preadmision</option>
             <option value="legacy">Legacy</option>
+            <option value="usuario (legacy)">Usuario (legacy/backend)</option>
             <option value="indeterminado">Indeterminado</option>
           </select>
         </div>
@@ -259,23 +263,20 @@ thead .sticky-col{background:#141428}
             <option value="Todos">Todos</option>
           </select>
         </div>
+        <div class="filter-group">
+          <span class="filter-label">Fuente:</span>
+          <select class="filter-select" id="selFuenteFin" onchange="renderTab2()">
+            <option value="Todos">Todos</option>
+            <option value="Frontend">Frontend (mar 2026+)</option>
+            <option value="Backend">Backend (jul 2025 - feb 2026)</option>
+          </select>
+        </div>
       </div>
       <div class="summary-row" id="summaryFE"></div>
       <div class="table-wrap" style="max-height:600px;overflow-y:auto">
         <table class="fin-table" id="tablaFE">
           <thead><tr id="tablaFEHead"></tr></thead>
           <tbody id="tablaFEBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">Accesorios Financiados (Backend / Historico)</div>
-      <div class="section-subtitle">Data historica de accesorios financiados (jul 2025 - feb 2026), antes del frontend actual.</div>
-      <div class="table-wrap" style="max-height:500px;overflow-y:auto">
-        <table class="fin-table" id="tablaBE">
-          <thead><tr id="tablaBEHead"></tr></thead>
-          <tbody id="tablaBEBody"></tbody>
         </table>
       </div>
     </div>
@@ -452,11 +453,26 @@ function populateFilters() {
   h += '<option value="C3">C3 -- Compatibilidad (13 ago - 24 ago)</option>';
   sel.innerHTML = h;
 
-  // Tab 2 mes filter
+  // Merge FE + BE into single array
+  DATA._financiadosMerged = [];
+  (DATA.financiadosFE || []).forEach(function(f) {
+    DATA._financiadosMerged.push({
+      mes: f.mes, accesorio: f.accesorio, precio: f.precio, cuota: f.cuota,
+      origen: f.origen, fuente: 'Frontend', cantidad: f.cantidad
+    });
+  });
+  (DATA.financiadosBE || []).forEach(function(f) {
+    DATA._financiadosMerged.push({
+      mes: f.mes, accesorio: f.accesorio, precio: f.precio, cuota: null,
+      origen: 'usuario (legacy)', fuente: 'Backend', cantidad: f.cantidad
+    });
+  });
+
+  // Tab 2 mes filter — from merged data
   sel = document.getElementById('selMesFE');
   h = '<option value="Todos">Todos</option>';
   var meses = {};
-  DATA.financiadosFE.forEach(function(f) { meses[f.mes] = true; });
+  DATA._financiadosMerged.forEach(function(f) { meses[f.mes] = true; });
   Object.keys(meses).sort().forEach(function(m) {
     h += '<option value="' + m + '">' + m + '</option>';
   });
@@ -932,15 +948,15 @@ function renderCasos() {
 // TAB 2: FINANCIADOS
 // ===========================
 function renderTab2() {
-  // Frontend table
   var origenFilter = document.getElementById('selOrigenFE').value;
   var mesFilter = document.getElementById('selMesFE').value;
+  var fuenteFilter = document.getElementById('selFuenteFin').value;
 
-  var rows = DATA.financiadosFE;
+  var rows = DATA._financiadosMerged || [];
   if (origenFilter !== 'Todos') rows = rows.filter(function(r) { return r.origen === origenFilter; });
   if (mesFilter !== 'Todos') rows = rows.filter(function(r) { return r.mes === mesFilter; });
+  if (fuenteFilter !== 'Todos') rows = rows.filter(function(r) { return r.fuente === fuenteFilter; });
 
-  // Sort by cantidad desc
   rows = rows.slice().sort(function(a, b) { return b.cantidad - a.cantidad; });
 
   // Summary
@@ -957,35 +973,22 @@ function renderTab2() {
   document.getElementById('summaryFE').innerHTML = sh;
 
   // Table
-  document.getElementById('tablaFEHead').innerHTML = '<tr><th>Mes</th><th>Accesorio</th><th>Precio</th><th>Cuota</th><th>Origen</th><th>Cantidad</th></tr>';
+  document.getElementById('tablaFEHead').innerHTML = '<tr><th>Mes</th><th>Accesorio</th><th>Precio</th><th>Cuota</th><th>Origen</th><th>Fuente</th><th>Cantidad</th></tr>';
   var tbody = '';
   rows.forEach(function(r) {
-    var badgeClass = 'badge-' + (r.origen || 'indeterminado');
+    var origenBadge = 'badge-' + (r.origen || 'indeterminado').replace(/[^a-z]/g, '');
+    var fuenteBadge = 'badge-' + r.fuente;
     tbody += '<tr>';
     tbody += '<td>' + r.mes + '</td>';
-    tbody += '<td>' + r.accesorio + '</td>';
+    tbody += '<td>' + (r.accesorio || 'null') + '</td>';
     tbody += '<td class="num-right">S/' + parseFloat(r.precio || 0).toLocaleString() + '</td>';
-    tbody += '<td class="num-right">' + (r.cuota && r.cuota !== '0.00' ? 'S/' + r.cuota : '-') + '</td>';
-    tbody += '<td><span class="badge-origen ' + badgeClass + '">' + r.origen + '</span></td>';
+    tbody += '<td class="num-right">' + (r.cuota && r.cuota !== '0.00' && r.cuota !== '0' ? 'S/' + r.cuota : '-') + '</td>';
+    tbody += '<td><span class="badge-origen badge-' + (r.origen || 'indeterminado') + '">' + r.origen + '</span></td>';
+    tbody += '<td><span class="badge-origen ' + fuenteBadge + '">' + r.fuente + '</span></td>';
     tbody += '<td class="num-right">' + r.cantidad + '</td>';
     tbody += '</tr>';
   });
   document.getElementById('tablaFEBody').innerHTML = tbody;
-
-  // Backend table
-  var beRows = DATA.financiadosBE.slice().sort(function(a, b) { return b.cantidad - a.cantidad; });
-  var bh = '<tr><th>Mes</th><th>Accesorio</th><th>Precio</th><th>Cantidad</th></tr>';
-  var btbody = '';
-  beRows.forEach(function(r) {
-    btbody += '<tr>';
-    btbody += '<td>' + r.mes + '</td>';
-    btbody += '<td>' + r.accesorio + '</td>';
-    btbody += '<td class="num-right">S/' + (r.precio || 0).toLocaleString() + '</td>';
-    btbody += '<td class="num-right">' + r.cantidad + '</td>';
-    btbody += '</tr>';
-  });
-  document.getElementById('tablaBEHead').innerHTML = bh;
-  document.getElementById('tablaBEBody').innerHTML = btbody;
 
   // Batches grid
   renderBatches();
