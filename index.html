@@ -688,6 +688,13 @@ function renderTable1() {
     }
   }
 
+  // When filters active, use frontend conApp as solBackend (no backend breakdown available)
+  if (hasFilterT) {
+    Object.values(groups).forEach(function(g) {
+      g.solBackend = g.conApp;
+    });
+  }
+
   // Sort by key
   var data = Object.values(groups).sort(function(a, b) {
     return a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
@@ -728,7 +735,7 @@ function renderTable1() {
 
   // Build transposed table: rows = metrics, columns = periods
   var allMetrics = [
-    {key:'solBackend', label:'Solicitudes (backend)', fmt:function(v){return v.toLocaleString();}, backendOnly:true},
+    {key:'solBackend', label: hasFilterT ? 'Solicitudes' : 'Solicitudes (backend)', fmt:function(v){return v.toLocaleString();}},
     {key:'webAntigua', label:'Ls Web antigua', fmt:function(v){return v.toLocaleString();}, backendOnly:true},
     {key:'nuevaWeb', label:'Ls Nueva web', fmt:function(v){return v.toLocaleString();}, backendOnly:true},
     {key:'fase', label:'Fase', fmt:function(v,r){return '<span class="'+faseClass(r.fase)+'">'+r.fase+'</span>';}},
