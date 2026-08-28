@@ -727,10 +727,10 @@ function renderTable1() {
   });
 
   // Build transposed table: rows = metrics, columns = periods
-  var metrics = [
-    {key:'solBackend', label:'Solicitudes (backend)', fmt:function(v){return v.toLocaleString();}},
-    {key:'webAntigua', label:'Ls Web antigua', fmt:function(v){return v.toLocaleString();}},
-    {key:'nuevaWeb', label:'Ls Nueva web', fmt:function(v){return v.toLocaleString();}},
+  var allMetrics = [
+    {key:'solBackend', label:'Solicitudes (backend)', fmt:function(v){return v.toLocaleString();}, backendOnly:true},
+    {key:'webAntigua', label:'Ls Web antigua', fmt:function(v){return v.toLocaleString();}, backendOnly:true},
+    {key:'nuevaWeb', label:'Ls Nueva web', fmt:function(v){return v.toLocaleString();}, backendOnly:true},
     {key:'fase', label:'Fase', fmt:function(v,r){return '<span class="'+faseClass(r.fase)+'">'+r.fase+'</span>';}},
     {key:'sesiones', label:'Sesiones', fmt:function(v){return v.toLocaleString();}},
     {key:'conApp', label:'Con solicitud', fmt:function(v){return '<strong>'+v.toLocaleString()+'</strong>';}},
@@ -739,6 +739,7 @@ function renderTable1() {
     {key:'itemsProm', label:'# acc / form', fmt:function(v){return v;}},
     {key:'cuotaProm', label:'Cuota prom adic', fmt:function(v){return 'S/'+v;}},
   ];
+  var metrics = hasFilterT ? allMetrics.filter(function(m){return !m.backendOnly;}) : allMetrics;
 
   var h = '<thead><tr><th class="sticky-col"></th>';
   data.forEach(function(d) {
