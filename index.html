@@ -572,13 +572,24 @@ function renderSummary() {
       });
     }
   });
-  // Compute backend totals for summary
-  var beAccOrgTotal = 0;
-  (DATA.backendAccOrg || []).forEach(function(b) { beAccOrgTotal += b.v; });
-  var beSolTotal = 0;
-  (DATA.backendSemanal || []).forEach(function(b) { beSolTotal += b.sol_total; });
-  var summaryAccOrg = beAccOrgTotal > 0 ? beAccOrgTotal : withOrgAcc;
-  var summaryBase = beSolTotal > 0 ? beSolTotal : formStarts;
+  // Compute backend totals for summary — only use backend globals when no filters active
+  var hasFilter = document.getElementById('selFase').value !== 'Todos'
+    || document.getElementById('selLanding').value !== 'Todos'
+    || document.getElementById('selTipo').value !== 'Todos'
+    || document.getElementById('selBrand').value !== 'Todos'
+    || document.getElementById('selMolti').value !== 'Todos';
+  var summaryAccOrg, summaryBase;
+  if (hasFilter) {
+    summaryAccOrg = withOrgAcc;
+    summaryBase = formStarts;
+  } else {
+    var beAccOrgTotal = 0;
+    (DATA.backendAccOrg || []).forEach(function(b) { beAccOrgTotal += b.v; });
+    var beSolTotal = 0;
+    (DATA.backendSemanal || []).forEach(function(b) { beSolTotal += b.sol_total; });
+    summaryAccOrg = beAccOrgTotal > 0 ? beAccOrgTotal : withOrgAcc;
+    summaryBase = beSolTotal > 0 ? beSolTotal : formStarts;
+  }
   var attachRate = summaryBase > 0 ? (summaryAccOrg / summaryBase * 100) : 0;
   var avgItems = withOrgAcc > 0 ? (orgAccCount / withOrgAcc) : 0;
   var avgCuota = orgAccCuotaN > 0 ? (orgAccCuotaSum / orgAccCuotaN) : 0;
@@ -635,51 +646,46 @@ function renderTable1() {
     }
   });
 
-  // Merge backend acc organico (total = web antigua + nueva)
-  var beAccMap = {};
-  (DATA.backendAccOrg || []).forEach(function(b) { beAccMap[String(b.semana)] = b.v; });
+  // Merge backend data only when no filters active (backend has no per-landing/type/brand breakdown)
+  var hasFilterT = document.getElementById('selFase').value !== 'Todos'
+    || document.getElementById('selLanding').value !== 'Todos'
+    || document.getElementById('selTipo').value !== 'Todos'
+    || document.getElementById('selBrand').value !== 'Todos'
+    || document.getElementById('selMolti').value !== 'Todos';
 
-  // Merge backend data
-  var beMap = {};
-  (DATA.backendSemanal || []).forEach(function(b) { beMap[String(b.semana)] = b; });
-  Object.values(groups).forEach(function(g) {
-    // For week view, lookup directly
-    var be = beMap[g.key];
-    if (be) {
-      g.solBackend = be.sol_total;
-      g.webAntigua = Number(be.web_antigua);
-      g.nuevaWeb = Number(be.nueva_web);
-    }
-  });
-  // For month view, need to aggregate backend by month
-  if (currentView === 'mes') {
-    var beByMonth = {};
-    (DATA.backendSemanal || []).forEach(function(b) {
-      var d = new Date(b.semana.toString().substring(0,4) + '-01-01');
-      // Approximate: use week number to get month
-      // Better: we stored desde but didn't inject it. Use semana to match.
-    });
-    // Simple approach: sum backend weeks that fall in each month group
-    var beWeeks = DATA.backendSemanal || [];
+  var beAccMap = {};
+  if (!hasFilterT) {
+    (DATA.backendAccOrg || []).forEach(function(b) { beAccMap[String(b.semana)] = b.v; });
+
+    // Merge backend data
+    var beMap = {};
+    (DATA.backendSemanal || []).forEach(function(b) { beMap[String(b.semana)] = b; });
     Object.values(groups).forEach(function(g) {
-      g.solBackend = 0; g.webAntigua = 0; g.nuevaWeb = 0;
-      beWeeks.forEach(function(b) {
-        // Match: the month of the session group key matches
-        // g.key is like "2026-04" for month view
-        // b.semana is like 202614
-        // We need to map week number to month
-        var yr = Math.floor(b.semana / 100);
-        var wk = b.semana % 100;
-        // Approximate month from week: Jan=1-4, Feb=5-8, etc.
-        var approxMonth = Math.ceil(wk * 12 / 52);
-        var monthKey = yr + '-' + String(approxMonth).padStart(2, '0');
-        if (monthKey === g.key) {
-          g.solBackend += b.sol_total;
-          g.webAntigua += Number(b.web_antigua);
-          g.nuevaWeb += Number(b.nueva_web);
-        }
-      });
+      var be = beMap[g.key];
+      if (be) {
+        g.solBackend = be.sol_total;
+        g.webAntigua = Number(be.web_antigua);
+        g.nuevaWeb = Number(be.nueva_web);
+      }
     });
+    // For month view, aggregate backend by month
+    if (currentView === 'mes') {
+      var beWeeks = DATA.backendSemanal || [];
+      Object.values(groups).forEach(function(g) {
+        g.solBackend = 0; g.webAntigua = 0; g.nuevaWeb = 0;
+        beWeeks.forEach(function(b) {
+          var yr = Math.floor(b.semana / 100);
+          var wk = b.semana % 100;
+          var approxMonth = Math.ceil(wk * 12 / 52);
+          var monthKey = yr + '-' + String(approxMonth).padStart(2, '0');
+          if (monthKey === g.key) {
+            g.solBackend += b.sol_total;
+            g.webAntigua += Number(b.web_antigua);
+            g.nuevaWeb += Number(b.nueva_web);
+          }
+        });
+      });
+    }
   }
 
   // Sort by key
@@ -687,27 +693,28 @@ function renderTable1() {
     return a.key < b.key ? -1 : a.key > b.key ? 1 : 0;
   });
 
-  // Override conAccOrg with backend total (includes web antigua + nueva)
-  data.forEach(function(g) {
-    if (currentView === 'sem') {
-      var beVal = beAccMap[g.key];
-      if (beVal !== undefined) g.conAccOrg = beVal;
-    }
-  });
-  // For month view, aggregate backend acc org
-  if (currentView === 'mes') {
-    var beAccWeeks = DATA.backendAccOrg || [];
+  // Override conAccOrg with backend total only when no filters active
+  if (!hasFilterT) {
     data.forEach(function(g) {
-      var total = 0;
-      beAccWeeks.forEach(function(b) {
-        var yr = Math.floor(b.semana / 100);
-        var wk = b.semana % 100;
-        var approxMonth = Math.ceil(wk * 12 / 52);
-        var monthKey = yr + '-' + String(approxMonth).padStart(2, '0');
-        if (monthKey === g.key) total += b.v;
-      });
-      if (total > 0) g.conAccOrg = total;
+      if (currentView === 'sem') {
+        var beVal = beAccMap[g.key];
+        if (beVal !== undefined) g.conAccOrg = beVal;
+      }
     });
+    if (currentView === 'mes') {
+      var beAccWeeks = DATA.backendAccOrg || [];
+      data.forEach(function(g) {
+        var total = 0;
+        beAccWeeks.forEach(function(b) {
+          var yr = Math.floor(b.semana / 100);
+          var wk = b.semana % 100;
+          var approxMonth = Math.ceil(wk * 12 / 52);
+          var monthKey = yr + '-' + String(approxMonth).padStart(2, '0');
+          if (monthKey === g.key) total += b.v;
+        });
+        if (total > 0) g.conAccOrg = total;
+      });
+    }
   }
 
   // Compute derived metrics
