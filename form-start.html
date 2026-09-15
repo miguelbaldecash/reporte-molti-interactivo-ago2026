@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Molti - Form Start Ago 2026 | BaldeCash</title>
+<title>Molti - Form Start Sep 2026 | BaldeCash</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 *{margin:0;padding:0;box-sizing:border-box}
@@ -53,7 +53,7 @@ thead .sticky-col{background:#141428}
 
 <div class="container">
 
-  <a class="back-link" href="https://miguelbaldecash.github.io/reporte-molti-interactivo-ago2026/">&larr; Volver al reporte principal</a>
+  <a class="back-link" href="index.html">&larr; Volver al reporte principal</a>
 
   <div class="section">
     <div class="section-title">Attach Rate por Form Start</div>
@@ -87,6 +87,24 @@ thead .sticky-col{background:#141428}
     </div>
   </div>
 
+  <div class="section">
+    <div class="section-title">Accesorios Mostrados por Form Start</div>
+    <div class="section-subtitle">Cada vez que un usuario abre el formulario, el ranker muestra accesorios. Esta tabla mide cuantos se mostraron (impressions) y el promedio por evento.</div>
+
+    <div class="summary-row" id="summaryImp"></div>
+
+    <div class="table-wrap">
+      <table id="tablaImp"></table>
+    </div>
+
+    <div style="margin-top:32px">
+      <div style="font-size:15px;font-weight:600;color:#c0c0d8;margin-bottom:12px">Top 15 Accesorios Mostrados (sep 1-15)</div>
+      <div class="table-wrap">
+        <table id="tablaTopAcc"></table>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -112,7 +130,10 @@ var DATA = [
 {"semana":202632,"desde":"2026-08-03","form_starts":785,"con_acc_add":253,"con_acc_remove":146,"con_acc_impression":1342,"submitted":628},
 {"semana":202633,"desde":"2026-08-10","form_starts":1021,"con_acc_add":229,"con_acc_remove":130,"con_acc_impression":1652,"submitted":745},
 {"semana":202634,"desde":"2026-08-17","form_starts":1713,"con_acc_add":411,"con_acc_remove":249,"con_acc_impression":2456,"submitted":1349},
-{"semana":202635,"desde":"2026-08-24","form_starts":1477,"con_acc_add":359,"con_acc_remove":189,"con_acc_impression":2093,"submitted":1126}
+{"semana":202635,"desde":"2026-08-24","form_starts":2528,"con_acc_add":635,"con_acc_remove":352,"con_acc_impression":3659,"submitted":1943},
+{"semana":202636,"desde":"2026-08-31","form_starts":2882,"con_acc_add":708,"con_acc_remove":358,"con_acc_impression":5211,"submitted":2124},
+{"semana":202637,"desde":"2026-09-07","form_starts":1936,"con_acc_add":518,"con_acc_remove":296,"con_acc_impression":3301,"submitted":1554},
+{"semana":202638,"desde":"2026-09-14","form_starts":339,"con_acc_add":90,"con_acc_remove":42,"con_acc_impression":556,"submitted":247}
 ];
 
 // Add fase and derived metrics
@@ -230,6 +251,128 @@ function renderTable2() {
 }
 
 renderTable2();
+
+// ===========================
+// IMPRESSIONS DATA & RENDER
+// ===========================
+var IMP_DATA = [
+{"semana":202618,"desde":"2026-04-28","events":2333,"sessions":767,"acc_shown":6171,"avg_per_event":2.6},
+{"semana":202619,"desde":"2026-05-04","events":3549,"sessions":1290,"acc_shown":8732,"avg_per_event":2.5},
+{"semana":202620,"desde":"2026-05-11","events":4015,"sessions":1512,"acc_shown":10178,"avg_per_event":2.5},
+{"semana":202621,"desde":"2026-05-18","events":4818,"sessions":1896,"acc_shown":12119,"avg_per_event":2.5},
+{"semana":202622,"desde":"2026-05-25","events":7344,"sessions":2771,"acc_shown":18390,"avg_per_event":2.5},
+{"semana":202623,"desde":"2026-06-01","events":4165,"sessions":1519,"acc_shown":10649,"avg_per_event":2.6},
+{"semana":202624,"desde":"2026-06-08","events":5002,"sessions":1832,"acc_shown":13322,"avg_per_event":2.7},
+{"semana":202625,"desde":"2026-06-15","events":9430,"sessions":3223,"acc_shown":22884,"avg_per_event":2.4},
+{"semana":202626,"desde":"2026-06-22","events":8321,"sessions":2522,"acc_shown":19436,"avg_per_event":2.3},
+{"semana":202627,"desde":"2026-06-29","events":3792,"sessions":1210,"acc_shown":9557,"avg_per_event":2.5},
+{"semana":202628,"desde":"2026-07-06","events":5459,"sessions":1834,"acc_shown":14004,"avg_per_event":2.6},
+{"semana":202629,"desde":"2026-07-13","events":5212,"sessions":1874,"acc_shown":13236,"avg_per_event":2.5},
+{"semana":202630,"desde":"2026-07-20","events":5078,"sessions":1842,"acc_shown":12643,"avg_per_event":2.5},
+{"semana":202631,"desde":"2026-07-27","events":5503,"sessions":2073,"acc_shown":13274,"avg_per_event":2.4},
+{"semana":202632,"desde":"2026-08-03","events":4065,"sessions":1342,"acc_shown":10014,"avg_per_event":2.5},
+{"semana":202633,"desde":"2026-08-10","events":5221,"sessions":1652,"acc_shown":12595,"avg_per_event":2.4},
+{"semana":202634,"desde":"2026-08-17","events":6711,"sessions":2456,"acc_shown":16876,"avg_per_event":2.5},
+{"semana":202635,"desde":"2026-08-24","events":8964,"sessions":3281,"acc_shown":20928,"avg_per_event":2.3},
+{"semana":202636,"desde":"2026-08-31","events":13134,"sessions":5211,"acc_shown":31538,"avg_per_event":2.4},
+{"semana":202637,"desde":"2026-09-07","events":9173,"sessions":3301,"acc_shown":22377,"avg_per_event":2.4},
+{"semana":202638,"desde":"2026-09-14","events":1813,"sessions":644,"acc_shown":4436,"avg_per_event":2.4}
+];
+
+IMP_DATA.forEach(function(d) {
+  d.fase = d.desde < '2026-06-24' ? 'PRE' : d.desde < '2026-07-18' ? 'A/B' : 'Personal';
+  var parts = d.desde.split('-');
+  d.label = parts[2] + '/' + parts[1];
+  d.events_per_session = d.sessions > 0 ? Math.round(d.events / d.sessions * 10) / 10 : 0;
+});
+
+var TOP_ACC = [
+{"name":"Impresora Smart Tank 585","count":4364},
+{"name":"Adaptador CA Samsung","count":4330},
+{"name":"Cable USB-C a USB-C 1m Apple","count":2621},
+{"name":"Galaxy Tab A11","count":2618},
+{"name":"MOUSE RAZER","count":2187},
+{"name":"Apple AirPods 4","count":2138},
+{"name":"Cable Lightning a USB-C 1m Apple","count":2133},
+{"name":"Mochila Nova Grey/Brown","count":2018},
+{"name":"Cover Case Negro para iPad 11","count":1406},
+{"name":"Lenovo Tab One Wifi","count":872},
+{"name":"Monitor ViewSonic 24 IPS VA240A-H","count":472},
+{"name":"Samsung Buds Core White","count":431},
+{"name":"Power Bank KCP-634","count":293},
+{"name":"KIT DE LIMPIEZA 1","count":292},
+{"name":"Mouse Inalámbrico TE-1235S","count":274}
+];
+
+function renderImpressions() {
+  var faseFilter = document.getElementById('selFase2').value;
+  var filtered = IMP_DATA;
+  if (faseFilter !== 'Todos') filtered = IMP_DATA.filter(function(d) { return d.fase === faseFilter; });
+
+  // Summary
+  var totals = {events:0, sessions:0, acc_shown:0};
+  filtered.forEach(function(d) {
+    totals.events += d.events;
+    totals.sessions += d.sessions;
+    totals.acc_shown += d.acc_shown;
+  });
+  var avgPerEvent = totals.events > 0 ? (totals.acc_shown / totals.events).toFixed(1) : '0';
+  var avgEventsPerSes = totals.sessions > 0 ? (totals.events / totals.sessions).toFixed(1) : '0';
+
+  var sh = '';
+  sh += '<div class="summary-box"><div class="summary-val">' + totals.events.toLocaleString() + '</div><div class="summary-label">Eventos impression</div></div>';
+  sh += '<div class="summary-box"><div class="summary-val">' + totals.sessions.toLocaleString() + '</div><div class="summary-label">Sesiones con impression</div></div>';
+  sh += '<div class="summary-box"><div class="summary-val">' + totals.acc_shown.toLocaleString() + '</div><div class="summary-label">Total acc mostrados</div></div>';
+  sh += '<div class="summary-box"><div class="summary-val">' + avgPerEvent + '</div><div class="summary-label">Acc / evento</div></div>';
+  sh += '<div class="summary-box"><div class="summary-val">' + avgEventsPerSes + '</div><div class="summary-label">Eventos / sesion</div></div>';
+  document.getElementById('summaryImp').innerHTML = sh;
+
+  // Table (transposed like the main one)
+  var metrics = [
+    {key:'fase', label:'Fase', fmt:function(v,r){return '<span class="'+faseClass(r.fase)+'">'+r.fase+'</span>';}},
+    {key:'events', label:'Eventos impression', fmt:function(v){return v.toLocaleString();}},
+    {key:'sessions', label:'Sesiones con impr.', fmt:function(v){return v.toLocaleString();}},
+    {key:'acc_shown', label:'Total acc mostrados', fmt:function(v){return '<strong>'+v.toLocaleString()+'</strong>';}},
+    {key:'avg_per_event', label:'Acc / evento', fmt:function(v){return v;}},
+    {key:'events_per_session', label:'Eventos / sesion', fmt:function(v){return v;}}
+  ];
+
+  totals.fase = '';
+  totals.avg_per_event = parseFloat(avgPerEvent);
+  totals.events_per_session = parseFloat(avgEventsPerSes);
+
+  var h = '<thead><tr><th class="sticky-col"></th>';
+  filtered.forEach(function(g) { h += '<th>' + g.label + '</th>'; });
+  h += '<th style="color:#ffdf60">Total</th>';
+  h += '</tr></thead><tbody>';
+
+  metrics.forEach(function(m) {
+    h += '<tr><td class="sticky-col rlabel">' + m.label + '</td>';
+    filtered.forEach(function(g) {
+      h += '<td>' + m.fmt(g[m.key], g) + '</td>';
+    });
+    h += '<td style="font-weight:600">' + m.fmt(totals[m.key], totals) + '</td>';
+    h += '</tr>';
+  });
+  h += '</tbody>';
+  document.getElementById('tablaImp').innerHTML = h;
+
+  // Top accessories table
+  var th = '<thead><tr><th>#</th><th>Accesorio</th><th>Veces mostrado (sep)</th><th>%</th></tr></thead><tbody>';
+  var topTotal = TOP_ACC.reduce(function(s,r){return s+r.count;},0);
+  TOP_ACC.forEach(function(r, i) {
+    var pct = (r.count / topTotal * 100).toFixed(1);
+    th += '<tr><td>' + (i+1) + '</td><td>' + r.name + '</td><td class="num-right">' + r.count.toLocaleString() + '</td><td class="num-right">' + pct + '%</td></tr>';
+  });
+  th += '</tbody>';
+  document.getElementById('tablaTopAcc').innerHTML = th;
+}
+
+renderImpressions();
+
+// Re-render impressions when fase filter changes
+var _origRenderTable2 = renderTable2;
+renderTable2 = function() { _origRenderTable2(); renderImpressions(); };
 </script>
 </body>
 </html>
