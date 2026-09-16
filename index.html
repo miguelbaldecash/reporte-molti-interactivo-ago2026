@@ -250,7 +250,7 @@ thead .sticky-col{background:#141428}
     <!-- Chart -->
     <div class="section" id="sec2">
       <div class="section-title">Accesorios organicos: % Attach por dia</div>
-      <div class="section-subtitle">Top 6 accesorios organicos por cantidad. Promedio movil 3 dias. Lineas verticales separan fases PRE / A/B / Personal.</div>
+      <div class="section-subtitle">Top 6 accesorios organicos del mes seleccionado. Promedio movil 3 dias. Lineas verticales separan fases PRE / A/B / Personal.</div>
       <div class="filters">
         <div class="filter-group">
           <span class="filter-label">Tipo de equipo:</span>
@@ -259,6 +259,11 @@ thead .sticky-col{background:#141428}
             <option value="laptop">Laptop</option>
             <option value="tablet">Tablet</option>
             <option value="celular">Celular</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Mes:</span>
+          <select class="filter-select" id="selMesChart" onchange="updateModeloFilter(); renderChart()">
           </select>
         </div>
         <div class="filter-group">
@@ -953,13 +958,29 @@ function renderTable1() {
 var chartColors = ['#5ec4e8','#f0a050','#80e080','#e070c0','#ffdf60','#70b0ff'];
 var chartState = {};
 
+function populateMesChart() {
+  var sel = document.getElementById('selMesChart');
+  var meses = {};
+  var months = ['','Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  DATA.sesiones.forEach(function(s) { meses[s.dia.substring(0,7)] = true; });
+  var sorted = Object.keys(meses).sort();
+  var h = '';
+  sorted.forEach(function(m) {
+    var label = months[parseInt(m.substring(5))] + ' ' + m.substring(0,4);
+    h += '<option value="' + m + '">' + label + '</option>';
+  });
+  sel.innerHTML = h;
+  sel.value = sorted[sorted.length - 1]; // default: ultimo mes
+}
+
 function updateModeloFilter() {
   var equipo = document.getElementById('selEquipoChart').value;
+  var mesChart = document.getElementById('selMesChart').value;
   var sel = document.getElementById('selModeloChart');
   var accs = {};
-  // Count organic accessories by name
   DATA.sesiones.forEach(function(s) {
     if (equipo !== 'Todos' && s.equipoType !== equipo) return;
+    if (mesChart && s.dia.substring(0,7) !== mesChart) return;
     s.accesorios.forEach(function(a) {
       if (a.origen !== 'usuario') return;
       accs[a.name] = (accs[a.name] || 0) + 1;
@@ -976,6 +997,7 @@ function updateModeloFilter() {
 function renderChart() {
   var equipoFilter = document.getElementById('selEquipoChart').value;
   var modeloFilter = document.getElementById('selModeloChart').value;
+  var mesChart = document.getElementById('selMesChart').value;
   var canvas = document.getElementById('accChart');
   var dpr = window.devicePixelRatio || 1;
   var rect = canvas.parentElement.getBoundingClientRect();
@@ -989,11 +1011,11 @@ function renderChart() {
   ctx.scale(dpr, dpr);
   ctx.clearRect(0, 0, W, H);
 
-  // Build daily data from sesiones
-  // For each day: count sessions with app (base), count organic acc by name
+  // Build daily data from sesiones (filtered by selected month)
   var dayData = {};
   DATA.sesiones.forEach(function(s) {
     if (equipoFilter !== 'Todos' && s.equipoType !== equipoFilter) return;
+    if (mesChart && s.dia.substring(0,7) !== mesChart) return;
     var d = s.dia;
     if (!dayData[d]) dayData[d] = { base: 0, accs: {} };
     if (s.applicationId) dayData[d].base++;
@@ -1007,9 +1029,10 @@ function renderChart() {
   var allDays = Object.keys(dayData).sort();
   if (allDays.length === 0) return;
 
-  // Count total per accesorio for top 6
+  // Count per accesorio for top 6 (filtered by selected month)
   var accTotals = {};
   allDays.forEach(function(d) {
+    if (mesChart && d.substring(0,7) !== mesChart) return;
     for (var name in dayData[d].accs) {
       accTotals[name] = (accTotals[name] || 0) + dayData[d].accs[name];
     }
@@ -1744,7 +1767,7 @@ populateFilters();
 renderTable1();
 renderSummary();
 // renderCasos removed
-window.addEventListener('load', function() { updateModeloFilter(); renderChart(); });
+window.addEventListener('load', function() { populateMesChart(); updateModeloFilter(); renderChart(); });
 window.addEventListener('resize', function() { renderChart(); if (_comparaActive) renderCompara(); });
 
 </script>
