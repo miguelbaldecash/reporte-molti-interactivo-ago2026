@@ -506,7 +506,16 @@ function populateFilters() {
   var mvSorted = Object.keys(mvCounts).sort();
   if (mvSorted.length > 0) {
     h += '<optgroup label="Por version">';
-    mvSorted.forEach(function(v) { h += '<option value="mv:' + v + '">' + v + ' (' + mvCounts[v] + ')</option>'; });
+    mvSorted.forEach(function(v) {
+      var range = _mvRanges[v];
+      var validCount = 0;
+      DATA.sesiones.forEach(function(s) {
+        if (s.moltiVersion === v && s.dia >= range[0] && (!range[1] || s.dia < range[1])) validCount++;
+      });
+      var desde = range[0].substring(5).replace('-','/');
+      var hasta = range[1] ? range[1].substring(5).replace('-','/') : 'hoy';
+      h += '<option value="mv:' + v + '">' + v + ' [' + desde + ' - ' + hasta + '] (' + validCount + ')</option>';
+    });
     h += '</optgroup>';
   }
   sel.innerHTML = h;
@@ -537,6 +546,22 @@ function populateFilters() {
   sel.innerHTML = h;
 }
 
+// Build valid date ranges for each molti version
+var _mvRanges = (function() {
+  var vSet = {};
+  DATA.sesiones.forEach(function(s) { if (s.moltiVersion) vSet[s.moltiVersion] = true; });
+  var vs = Object.keys(vSet).map(function(v) {
+    var m = v.match(/(\d{4}-\d{2}-\d{2})/);
+    return { name: v, date: m ? m[1] : '2026-07-20' };
+  }).sort(function(a,b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : a.name < b.name ? -1 : 1; });
+  var ranges = {};
+  for (var i = 0; i < vs.length; i++) {
+    var next = vs[i+1];
+    ranges[vs[i].name] = [vs[i].date, next ? next.date : null];
+  }
+  return ranges;
+})();
+
 function getFilteredSessions() {
   var fase = document.getElementById('selFase').value;
   var landing = document.getElementById('selLanding').value;
@@ -550,7 +575,12 @@ function getFilteredSessions() {
     if (brand !== 'Todos' && s.equipoBrand !== brand) return false;
     if (molti !== 'Todos') {
       if (molti === 'null' && s.codigoVersion !== null) return false;
-      else if (molti.indexOf('mv:') === 0) { if (s.moltiVersion !== molti.substring(3)) return false; }
+      else if (molti.indexOf('mv:') === 0) {
+        var mv = molti.substring(3);
+        if (s.moltiVersion !== mv) return false;
+        var range = _mvRanges[mv];
+        if (range && (s.dia < range[0] || (range[1] && s.dia >= range[1]))) return false;
+      }
       else if (molti !== 'null' && s.codigoVersion !== molti) return false;
     }
     return true;
@@ -682,13 +712,19 @@ function renderTable1() {
         orgAccCount: 0, orgCuotaSum: 0, orgCuotaN: 0,
         firmados: 0, solBackend: 0, webAntigua: 0, nuevaWeb: 0,
         firmadas: 0, firmConPerif: 0, firmConOrg: 0, firmAttOrg: 0,
-        accOrgSolo: 0, accOrgCombo: 0, firmConOrgFE: 0
+        accOrgSolo: 0, accOrgCombo: 0, firmConOrgFE: 0,
+        minDia: s.dia, maxDia: s.dia
       };
     }
     var g = groups[key];
+    if (s.dia < g.minDia) g.minDia = s.dia;
+    if (s.dia > g.maxDia) g.maxDia = s.dia;
     g.sesiones++;
     if (s.applicationId) g.conApp++;
-    if (s.firmado) g.firmados++;
+    if (s.firmado) {
+      g.firmados++;
+      if (s.accesorios.length > 0) g.firmConPerifFE = (g.firmConPerifFE || 0) + 1;
+    }
 
     var orgAccs = s.accesorios.filter(function(a) { return a.origen === 'usuario'; });
     if (orgAccs.length > 0) {
@@ -821,6 +857,13 @@ function renderTable1() {
         g.firmAttOrg = g.firmadas > 0 ? Math.round(g.firmConOrg / g.firmadas * 1000) / 10 : 0;
       }
     });
+  } else {
+    data.forEach(function(g) {
+      g.firmadas = g.firmados;
+      g.firmConPerif = g.firmConPerifFE || 0;
+      g.firmConOrg = g.firmConOrgFE || 0;
+      g.firmAttOrg = g.firmadas > 0 ? Math.round(g.firmConOrg / g.firmadas * 1000) / 10 : 0;
+    });
   }
 
   // Build transposed table: rows = metrics, columns = periods
@@ -837,16 +880,24 @@ function renderTable1() {
     {key:'attach', label:'% Attach rate', fmt:function(v){return '<strong style="color:'+(v>12?'#00e676':v<8?'#e53e3e':'#ffdf60')+'">'+v+'%</strong>';}},
     {key:'itemsProm', label:'# acc / form', fmt:function(v){return v;}},
     {key:'cuotaProm', label:'Cuota prom adic', fmt:function(v){return 'S/'+v;}},
-    {key:'firmadas', label:'Firmadas', fmt:function(v){return v ? '<strong>'+v.toLocaleString()+'</strong>' : '';}, backendOnly:true},
-    {key:'firmConPerif', label:'Firm. con periferico', fmt:function(v){return v != null ? v.toLocaleString() : '';}, backendOnly:true},
-    {key:'firmConOrg', label:'Firm. con acc organico', fmt:function(v){return v != null ? v.toLocaleString() : '';}, backendOnly:true},
-    {key:'firmAttOrg', label:'% Attach org (firmadas)', fmt:function(v){return v != null ? '<strong style="color:'+(v>8?'#00e676':v<4?'#e53e3e':'#ffdf60')+'">'+v+'%</strong>' : '';}, backendOnly:true},
+    {key:'firmadas', label:'Firmadas', fmt:function(v){return v ? '<strong>'+v.toLocaleString()+'</strong>' : '';}},
+    {key:'firmConPerif', label:'Firm. con periferico', fmt:function(v){return v != null ? v.toLocaleString() : '';}},
+    {key:'firmConOrg', label:'Firm. con acc organico', fmt:function(v){return v != null ? v.toLocaleString() : '';}},
+    {key:'firmAttOrg', label:'% Attach org (firmadas)', fmt:function(v){return v != null ? '<strong style="color:'+(v>8?'#00e676':v<4?'#e53e3e':'#ffdf60')+'">'+v+'%</strong>' : '';}},
   ];
   var metrics = hasFilterT ? allMetrics.filter(function(m){return !m.backendOnly;}) : allMetrics;
 
+  var isMvFilter = document.getElementById('selMolti').value.indexOf('mv:') === 0;
   var h = '<thead><tr><th class="sticky-col"></th>';
   data.forEach(function(d) {
-    h += '<th>' + d.label + '</th>';
+    if (isMvFilter && currentView === 'sem' && d.minDia && d.maxDia) {
+      var desde = d.minDia.substring(8) + '/' + d.minDia.substring(5,7);
+      var hasta = d.maxDia.substring(8) + '/' + d.maxDia.substring(5,7);
+      var sub = desde === hasta ? desde : desde + '-' + hasta;
+      h += '<th>' + d.label + '<br><span style="font-weight:400;font-size:9px;color:#7a7a9a">' + sub + '</span></th>';
+    } else {
+      h += '<th>' + d.label + '</th>';
+    }
   });
 
   // Totals
