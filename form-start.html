@@ -98,7 +98,7 @@ thead .sticky-col{background:#141428}
     </div>
 
     <div style="margin-top:32px">
-      <div style="font-size:15px;font-weight:600;color:#c0c0d8;margin-bottom:12px">Top 15 Accesorios Mostrados (sep 1-15)</div>
+      <div style="font-size:15px;font-weight:600;color:#c0c0d8;margin-bottom:12px">Top 15 Accesorios Mostrados (sep 16 - oct 11)</div>
       <div class="table-wrap">
         <table id="tablaTopAcc"></table>
       </div>
@@ -279,7 +279,10 @@ var IMP_DATA = [
 {"semana":202635,"desde":"2026-08-24","events":8964,"sessions":3281,"acc_shown":20928,"avg_per_event":2.3},
 {"semana":202636,"desde":"2026-08-31","events":13134,"sessions":5211,"acc_shown":31538,"avg_per_event":2.4},
 {"semana":202637,"desde":"2026-09-07","events":9173,"sessions":3301,"acc_shown":22377,"avg_per_event":2.4},
-{"semana":202638,"desde":"2026-09-14","events":1813,"sessions":644,"acc_shown":4436,"avg_per_event":2.4}
+{"semana":202638,"desde":"2026-09-14","events":1813,"sessions":644,"acc_shown":4436,"avg_per_event":2.4},
+{"semana":202639,"desde":"2026-09-21","events":7728,"sessions":3139,"acc_shown":19181,"avg_per_event":2.5},
+{"semana":202640,"desde":"2026-09-28","events":5130,"sessions":1964,"acc_shown":13462,"avg_per_event":2.6},
+{"semana":202641,"desde":"2026-10-05","events":3867,"sessions":1508,"acc_shown":9901,"avg_per_event":2.6}
 ];
 
 IMP_DATA.forEach(function(d) {
@@ -290,21 +293,21 @@ IMP_DATA.forEach(function(d) {
 });
 
 var TOP_ACC = [
-{"name":"Impresora Smart Tank 585","count":4364},
-{"name":"Adaptador CA Samsung","count":4330},
-{"name":"Cable USB-C a USB-C 1m Apple","count":2621},
-{"name":"Galaxy Tab A11","count":2618},
-{"name":"MOUSE RAZER","count":2187},
-{"name":"Apple AirPods 4","count":2138},
-{"name":"Cable Lightning a USB-C 1m Apple","count":2133},
-{"name":"Mochila Nova Grey/Brown","count":2018},
-{"name":"Cover Case Negro para iPad 11","count":1406},
-{"name":"Lenovo Tab One Wifi","count":872},
-{"name":"Monitor ViewSonic 24 IPS VA240A-H","count":472},
-{"name":"Samsung Buds Core White","count":431},
-{"name":"Power Bank KCP-634","count":293},
-{"name":"KIT DE LIMPIEZA 1","count":292},
-{"name":"Mouse Inalámbrico TE-1235S","count":274}
+{"name":"Apple AirPods 4","count":8611},
+{"name":"Monitor LED IPS 24 LG 24U411B","count":5442},
+{"name":"Monitor Portatil PM161Q","count":5130},
+{"name":"Adaptador CA Samsung","count":3866},
+{"name":"Cable USB-C a USB-C 1m Apple","count":3605},
+{"name":"Monitor Samsung Odyssey G3 S24DG300EL 24","count":3586},
+{"name":"Case Transparente A57","count":2932},
+{"name":"Case para iPad 11 Genérico","count":2394},
+{"name":"Samsung Buds Core White","count":2353},
+{"name":"MOUSE RAZER","count":2051},
+{"name":"Mochila Nova Grey/Brown","count":1965},
+{"name":"Cable Lightning a USB-C 1m Apple","count":1886},
+{"name":"KIT DE LIMPIEZA 1","count":1723},
+{"name":"Case Transparente A17","count":1564},
+{"name":"Case Transparente A27","count":1319}
 ];
 
 function renderImpressions() {
@@ -361,7 +364,7 @@ function renderImpressions() {
   document.getElementById('tablaImp').innerHTML = h;
 
   // Top accessories table
-  var th = '<thead><tr><th>#</th><th>Accesorio</th><th>Veces mostrado (sep)</th><th>%</th></tr></thead><tbody>';
+  var th = '<thead><tr><th>#</th><th>Accesorio</th><th>Veces mostrado</th><th>%</th></tr></thead><tbody>';
   var topTotal = TOP_ACC.reduce(function(s,r){return s+r.count;},0);
   TOP_ACC.forEach(function(r, i) {
     var pct = (r.count / topTotal * 100).toFixed(1);
